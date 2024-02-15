@@ -25,14 +25,16 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       const { word, definition } = JSON.parse(body);
       if (!word || !definition) {
-        res.writeHead(400, { 'Content-Type': 'text/plain' });
-        res.end('Please provide both word and definition.');
+        const errorMessage = 'Please provide both word and definition.';
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: errorMessage }));
         return;
       }
       const existingIndex = dictionary.findIndex(entry => entry.word === word);
       if (existingIndex !== -1) {
-        res.writeHead(409, { 'Content-Type': 'text/plain' });
-        res.end(`Warning! '${word}' already exists.`);
+        const errorMessage = `Warning! '${word}' already exists.`;
+        res.writeHead(409, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: errorMessage }));
         return;
       }
       dictionary.push({ word, definition });
@@ -41,13 +43,14 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/plain' });
       res.end(`Request # ${requestCount} - New entry recorded:\n\n"${word} : ${definition}"`);
     });
-  } else if (req.method === 'GET' && parsedUrl.pathname === '/api/definitions') {
+  } else if (req.method === 'GET' && parsedUrl.pathname === '/api/definitions/') {
     const { word } = parsedUrl.query;
     console.log(word);
     const entry = dictionary.find(entry => entry.word === word);
     if (!entry) {
+      const errorMessage = `Request # ${requestCount + 1}, word '${word}' not found!`;
       res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ message: `Request # ${requestCount + 1}, word '${word}' not found!` }));
+      res.end(JSON.stringify({ error: errorMessage }));
       return;
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });

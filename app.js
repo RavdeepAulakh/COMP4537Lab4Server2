@@ -46,7 +46,7 @@ const server = http.createServer((req, res) => {
       dictionary.push({ word, definition });
       requestCount++;
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(requestNewEntryRecorded(requestCount, word, definition)));
+      res.end(JSON.stringify(requestNewEntryRecorded(requestCount, word, definition, dictionary.length)));
     });
   } else if (req.method === 'GET' && parsedUrl.pathname === '/api/definitions') {
     const { word } = parsedUrl.query;

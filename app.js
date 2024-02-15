@@ -33,12 +33,14 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       const { word, definition } = JSON.parse(body);
       if (!word || !definition) {
+        requestCount++;
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: pleaseProvideBothWordAndDefinition }));
         return;
       }
       const existingIndex = dictionary.findIndex(entry => entry.word === word);
       if (existingIndex !== -1) {
+        requestCount++;
         res.writeHead(409, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: warningWordAlreadyExists(word) }));
         return;
@@ -52,13 +54,16 @@ const server = http.createServer((req, res) => {
     const { word } = parsedUrl.query;
     const entry = dictionary.find(entry => entry.word === word);
     if (!entry) {
+      requestCount++;
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: requestWordNotFound(requestCount, word) }));
       return;
     }
+    requestCount++;
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ message: `${entry.word}: ${entry.definition}` }));
   } else {
+    requestCount++;
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end(notFound);
   }

@@ -1,5 +1,13 @@
+// server.js
 const http = require('http');
 const url = require('url');
+const {
+  pleaseProvideBothWordAndDefinition,
+  warningWordAlreadyExists,
+  requestNewEntryRecorded,
+  requestWordNotFound,
+  notFound
+} = require('./modules/strings.js');
 
 let dictionary = [];
 let requestCount = 0;
@@ -25,39 +33,34 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       const { word, definition } = JSON.parse(body);
       if (!word || !definition) {
-        const errorMessage = 'Please provide both word and definition.';
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: errorMessage }));
+        res.end(JSON.stringify({ error: pleaseProvideBothWordAndDefinition }));
         return;
       }
       const existingIndex = dictionary.findIndex(entry => entry.word === word);
       if (existingIndex !== -1) {
-        const errorMessage = `Warning! '${word}' already exists.`;
         res.writeHead(409, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: errorMessage }));
+        res.end(JSON.stringify({ error: warningWordAlreadyExists(word) }));
         return;
       }
       dictionary.push({ word, definition });
-      console.log(dictionary);
       requestCount++;
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end(`Request # ${requestCount} - New entry recorded:\n\n"${word} : ${definition}"`);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(requestNewEntryRecorded(requestCount, word, definition)));
     });
   } else if (req.method === 'GET' && parsedUrl.pathname === '/api/definitions') {
     const { word } = parsedUrl.query;
-    console.log(word);
     const entry = dictionary.find(entry => entry.word === word);
     if (!entry) {
-      const errorMessage = `Request # ${requestCount + 1}, word '${word}' not found!`;
       res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: errorMessage }));
+      res.end(JSON.stringify({ error: requestWordNotFound(requestCount, word) }));
       return;
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ message: `${entry.word}: ${entry.definition}` }));
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not Found');
+    res.end(notFound);
   }
 });
 

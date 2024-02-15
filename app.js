@@ -43,7 +43,7 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/plain' });
       res.end(`Request # ${requestCount} - New entry recorded:\n\n"${word} : ${definition}"`);
     });
-  } else if (req.method === 'GET' && parsedUrl.pathname === '/api/definitions/') {
+  } else if (req.method === 'GET' && parsedUrl.pathname === '/api/definitions') {
     const { word } = parsedUrl.query;
     console.log(word);
     const entry = dictionary.find(entry => entry.word === word);
